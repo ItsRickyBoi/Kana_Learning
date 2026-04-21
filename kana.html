@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kana Quiz — Learn Japanese Kana</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Shippori+Mincho:wght@400;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #2d2d4e;
+    --paper: #f5f0e8;
+    --paper-warm: #ede7d9;
+    --red: #c0392b;
+    --red-light: #e74c3c;
+    --gold: #c9a84c;
+    --gold-light: #f0c96e;
+    --green: #2e7d52;
+    --green-light: #3a9d66;
+    --muted: #8a7f72;
+    --border: #c8b89a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Serif Display', serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Washi paper texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(180,160,120,0.08) 28px, rgba(180,160,120,0.08) 29px),
+      repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(180,160,120,0.05) 28px, rgba(180,160,120,0.05) 29px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Red vertical stripe decoration */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--red);
+    z-index: 10;
+  }
+
+  .page { position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 40px 60px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .logo-jp {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2rem;
+    color: var(--red);
+    letter-spacing: 0.1em;
+  }
+
+  .logo-en {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ── HOME SCREEN ── */
+  #screen-home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px 80px;
+    min-height: calc(100vh - 90px);
+  }
+
+  .home-hero {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .hero-kana {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(5rem, 15vw, 9rem);
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.2s;
+  }
+
+  .hero-kana span { color: var(--red); }
+
+  .hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-style: italic;
+    color: var(--muted);
+    margin-top: 16px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.5s;
+  }
+
+  .hero-desc {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1rem;
+    color: var(--muted);
+    margin-top: 10px;
+    max-width: 420px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.7s;
+  }
+
+  /* Settings card */
+  .settings-card {
+    background: var(--paper-warm);
+    border: 2px solid var(--border);
+    border-radius: 2px;
+    padding: 40px 48px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 6px 6px 0 rgba(26,26,46,0.12);
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.9s;
+  }
+
+  .settings-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .setting-row {
+    margin-bottom: 24px;
+  }
+
+  .setting-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* Toggle buttons */
+  .toggle-group {
+    display: flex;
+    gap: 0;
+    border: 2px solid var(--border);
+  }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    background: var(--paper);
+    color: var(--muted);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .toggle-btn:last-child { border-right: none; }
+
+  .toggle-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .toggle-btn .kana-hint {
+    display: block;
+    font-size: 0.7rem;
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+
+  /* Checkbox style */
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .custom-checkbox {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    background: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .custom-checkbox.checked {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .custom-checkbox.checked::after {
+    content: '✓';
+    color: var(--paper);
+    font-size: 0.75rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .checkbox-label {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .checkbox-label small {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Start button */
+  .btn-start {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    background: var(--red);
+    color: var(--paper);
+    border: none;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    margin-top: 36px;
+    transition: all 0.18s ease;
+    box-shadow: 4px 4px 0 rgba(26,26,46,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-start::after {
+    content: '始める';
+    font-family: 'Noto Serif JP', serif;
+    font-style: normal;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .btn-start:hover {
+    background: var(--red-light);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 rgba(26,26,46,0.2);
+  }
+
+  .btn-start:active {
+    transform: translate(0,0);
+    box-shadow: 2px 2px 0 rgba(26,26,46,0.2);
+  }
+
+  /* ── QUIZ SCREEN ── */
+  #screen-quiz {
+    display: none;
+    padding: 40px 20px 80px;
+    min-height: calc(100vh - 90px);
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .quiz-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .quiz-mode-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .quiz-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+  }
+
+  .quiz-score .score-correct { color: var(--green); font-weight: 500; }
+  .quiz-score .score-total { color: var(--muted); }
+
+  /* Progress bar */
+  .progress-track {
+    height: 3px;
+    background: var(--border);
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--red);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* Question */
+  .question-area {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .question-prompt {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .question-word {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(3rem, 10vw, 5rem);
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 16px;
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  .question-meaning {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--muted);
+  }
+
+  .question-meaning .meaning-text { color: var(--ink-light); }
+
+  /* Choices */
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .choice-btn {
+    padding: 20px 16px;
+    border: 2px solid var(--border);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    position: relative;
+    box-shadow: 3px 3px 0 rgba(26,26,46,0.08);
+  }
+
+  .choice-btn .choice-letter {
+    font-size: 0.65rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: 0.15em;
+  }
+
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--ink);
+    transform: translate(-2px,-2px);
+    box-shadow: 5px 5px 0 rgba(26,26,46,0.12);
+  }
+
+  .choice-btn.correct {
+    border-color: var(--green);
+    background: #edf7f1;
+    color: var(--green);
+    box-shadow: 3px 3px 0 rgba(46,125,82,0.2);
+  }
+
+  .choice-btn.wrong {
+    border-color: var(--red);
+    background: #fdf0ef;
+    color: var(--red);
+    box-shadow: 3px 3px 0 rgba(192,57,43,0.2);
+  }
+
+  .choice-btn.choice-kana {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.08em;
+  }
+
+  .choice-btn:disabled { cursor: default; }
+
+  /* Feedback */
+  .feedback-bar {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-left: 4px solid transparent;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.95rem;
+    min-height: 58px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feedback-bar.show { opacity: 1; }
+  .feedback-bar.correct { border-color: var(--green); background: #edf7f1; color: var(--green); }
+  .feedback-bar.wrong { border-color: var(--red); background: #fdf0ef; color: var(--red); }
+
+  .feedback-bar .fb-main { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+  .feedback-bar .fb-detail { font-size: 0.88rem; opacity: 0.85; }
+
+  /* Next button */
+  .btn-next {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.18s ease;
+    box-shadow: 4px 4px 0 rgba(26,26,46,0.15);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .btn-next.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .btn-next:hover {
+    background: var(--ink-light);
+    transform: translate(-2px,-2px);
+    box-shadow: 6px 6px 0 rgba(26,26,46,0.15);
+  }
+
+  /* ── RESULT SCREEN ── */
+  #screen-result {
+    display: none;
+    padding: 60px 20px 80px;
+    min-height: calc(100vh - 90px);
+    max-width: 580px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .result-kana {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 4rem;
+    margin-bottom: 8px;
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  .result-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    font-style: italic;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .result-subtitle {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+
+  .result-score-box {
+    border: 2px solid var(--border);
+    padding: 32px;
+    background: var(--paper-warm);
+    box-shadow: 6px 6px 0 rgba(26,26,46,0.1);
+    margin-bottom: 32px;
+  }
+
+  .result-fraction {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3.5rem;
+    color: var(--red);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .result-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .result-pct {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.4rem;
+    color: var(--ink-light);
+  }
+
+  .result-message {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--muted);
+    margin-bottom: 36px;
+    line-height: 1.5;
+  }
+
+  .result-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-retry, .btn-home {
+    padding: 14px 32px;
+    border: 2px solid var(--ink);
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    font-style: italic;
+    cursor: pointer;
+    transition: all 0.18s;
+    box-shadow: 3px 3px 0 rgba(26,26,46,0.12);
+  }
+
+  .btn-retry {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--paper);
+  }
+
+  .btn-home {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .btn-retry:hover, .btn-home:hover {
+    transform: translate(-2px,-2px);
+    box-shadow: 5px 5px 0 rgba(26,26,46,0.15);
+  }
+
+  /* Question count custom input */
+  .qcount-row { display: flex; flex-direction: column; gap: 10px; }
+  .qcount-presets { width: 100%; }
+
+  .custom-q-wrap {
+    display: none;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  .custom-q-wrap.visible { display: block; }
+
+  .custom-q-wrap input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid var(--border);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .custom-q-wrap input:focus { border-color: var(--ink); }
+  .custom-q-wrap input::placeholder { color: var(--muted); }
+
+  /* Meaning hint / popup */
+  .meaning-hint-wrap {
+    position: relative;
+    display: inline-block;
+    margin-top: 14px;
+  }
+
+  .meaning-hint-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    padding: 6px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .meaning-hint-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .meaning-hint-btn .hint-eye { font-size: 0.85rem; }
+
+  .meaning-popup {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 8px 16px;
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    z-index: 20;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+    animation: fadeUp 0.18s ease forwards;
+  }
+  .meaning-popup::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--ink);
+  }
+  .meaning-popup.open { display: block; }
+
+  /* Question type badge */
+  .qtype-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .qtype-badge.type-kana { border-color: var(--red); color: var(--red); }
+  .qtype-badge.type-romaji { border-color: #2e6ea6; color: #2e6ea6; }
+
+  /* ── TYPE ANSWER AREA ── */
+  .type-answer-area {
+    margin-top: 4px;
+  }
+
+  .type-input-wrap {
+    display: flex;
+    gap: 0;
+    border: 2px solid var(--border);
+    box-shadow: 3px 3px 0 rgba(26,26,46,0.08);
+    transition: border-color 0.15s;
+  }
+  .type-input-wrap:focus-within { border-color: var(--ink); }
+
+  .type-input {
+    flex: 1;
+    padding: 16px 18px;
+    border: none;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.4rem;
+    outline: none;
+    min-width: 0;
+  }
+  .type-input::placeholder {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .type-input.romaji-mode {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+  }
+
+  .type-submit-btn {
+    padding: 0 22px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .type-submit-btn:hover { background: var(--ink-light); }
+  .type-submit-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .type-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-top: 8px;
+    min-height: 1em;
+  }
+
+  /* ── KANA KEYBOARD ── */
+  .kana-keyboard {
+    margin-top: 16px;
+    border: 2px solid var(--border);
+    background: var(--paper-warm);
+    padding: 12px;
+    box-shadow: 3px 3px 0 rgba(26,26,46,0.08);
+  }
+
+  .kana-kb-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .kb-tab {
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .kb-tab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .kb-tab:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
+  .kb-tab-special {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.85rem;
+    padding: 5px 10px;
+  }
+
+  .kana-kb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+
+  .kb-key {
+    padding: 10px 4px;
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.1s;
+    text-align: center;
+    min-width: 0;
+    box-shadow: 1px 2px 0 rgba(26,26,46,0.1);
+  }
+  .kb-key:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); transform: translateY(-1px); }
+  .kb-key:active { transform: translateY(0); box-shadow: none; }
+
+  .kana-kb-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .kb-action-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .kb-action-btn:hover { border-color: var(--red); color: var(--red); }
+  .kb-clear { margin-left: auto; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── UTILITIES ── */
+  .hidden { display: none !important; }
+
+  @media (max-width: 500px) {
+    header { padding: 24px 28px 16px; }
+    .settings-card { padding: 28px 24px; }
+    .choices-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="logo-jp">かな</div>
+    <div class="logo-en">Kana Quiz</div>
+  </header>
+
+  <!-- ══ HOME ══ -->
+  <section id="screen-home">
+    <div class="home-hero">
+      <div class="hero-kana">あ<span>ア</span>い<span>イ</span></div>
+      <div class="hero-title">Master Japanese Kana</div>
+      <div class="hero-desc">Read real Japanese words — just written in kana. Choose hiragana or katakana, add compound sounds (拗音), and test yourself.</div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-title">Quiz Settings</div>
+
+      <div class="setting-row">
+        <span class="setting-label">Script</span>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="btn-hira" onclick="selectScript('hiragana')">
+            Hiragana
+            <span class="kana-hint">ひらがな</span>
+          </button>
+          <button class="toggle-btn" id="btn-kata" onclick="selectScript('katakana')">
+            Katakana
+            <span class="kana-hint">カタカナ</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-label">Answer Mode</span>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="btn-mode-mc" onclick="selectMode('mc')">
+            Multiple Choice
+            <span class="kana-hint">4 options</span>
+          </button>
+          <button class="toggle-btn" id="btn-mode-type" onclick="selectMode('type')">
+            Type Answer
+            <span class="kana-hint">free input</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-label">Options</span>
+        <div class="checkbox-row" onclick="toggleYouon()">
+          <div class="custom-checkbox" id="cb-youon"></div>
+          <div class="checkbox-label">
+            Include 拗音 (compound sounds)
+            <small>きゃ・しゅ・ちょ etc.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-label">Questions</span>
+        <div class="qcount-row">
+          <div class="toggle-group qcount-presets">
+            <button class="toggle-btn active" id="btn-q10" onclick="selectQCount(10)">10</button>
+            <button class="toggle-btn" id="btn-q20" onclick="selectQCount(20)">20</button>
+            <button class="toggle-btn" id="btn-qcustom" onclick="selectQCount('custom')">Custom</button>
+          </div>
+          <div class="custom-q-wrap" id="custom-q-wrap">
+            <input type="number" id="custom-q-input" min="1" max="200" placeholder="e.g. 35"
+              oninput="onCustomQInput()" />
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-start" onclick="startQuiz()">Start Quiz</button>
+    </div>
+  </section>
+
+  <!-- ══ QUIZ ══ -->
+  <section id="screen-quiz">
+    <div class="quiz-meta">
+      <span class="quiz-mode-tag" id="quiz-mode-tag">Hiragana</span>
+      <span class="quiz-score">
+        <span class="score-correct" id="score-correct">0</span>
+        <span class="score-total" id="score-total"> / 0 correct</span>
+      </span>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <div class="question-area">
+      <div class="question-prompt" id="question-prompt">Identify the rōmaji for:</div>
+      <div class="question-word" id="q-word">—</div>
+      <div class="meaning-hint-wrap">
+        <button class="meaning-hint-btn" id="meaning-hint-btn" onclick="toggleMeaning()">
+          <span class="hint-eye">👁</span> reveal meaning
+        </button>
+        <div class="meaning-popup" id="meaning-popup">
+          <span id="q-meaning">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="choices-grid" id="choices-grid"></div>
+
+    <!-- Free-type answer area -->
+    <div class="type-answer-area" id="type-answer-area" style="display:none">
+      <div class="type-input-wrap">
+        <input type="text" id="type-input" class="type-input" autocomplete="off"
+          autocorrect="off" autocapitalize="off" spellcheck="false"
+          placeholder="type your answer…" oninput="onTypeInput()" onkeydown="onTypeKeydown(event)" />
+        <button class="type-submit-btn" id="type-submit-btn" onclick="submitTypedAnswer()">
+          確認 →
+        </button>
+      </div>
+      <div class="type-hint" id="type-hint"></div>
+
+      <!-- Kana soft keyboard (shown only when answer is kana) -->
+      <div class="kana-keyboard" id="kana-keyboard" style="display:none">
+        <div class="kana-kb-tabs">
+          <button class="kb-tab active" id="kb-tab-main" onclick="showKbTab('main')">Main</button>
+          <button class="kb-tab" id="kb-tab-dakuten" onclick="showKbTab('dakuten')">゛゜</button>
+          <button class="kb-tab" id="kb-tab-youon" onclick="showKbTab('youon')">拗音</button>
+          <button class="kb-tab kb-tab-special" onclick="kbInsert('ー')">ー</button>
+          <button class="kb-tab kb-tab-special" onclick="kbInsert('っ')" id="kb-small-tsu">っ</button>
+        </div>
+        <div class="kana-kb-grid" id="kb-main"></div>
+        <div class="kana-kb-grid" id="kb-dakuten" style="display:none"></div>
+        <div class="kana-kb-grid" id="kb-youon" style="display:none"></div>
+        <div class="kana-kb-actions">
+          <button class="kb-action-btn" onclick="kbBackspace()">⌫</button>
+          <button class="kb-action-btn kb-clear" onclick="kbClear()">✕ clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="feedback-bar" id="feedback-bar">
+      <div class="fb-main" id="fb-main"></div>
+      <div class="fb-detail" id="fb-detail"></div>
+    </div>
+
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+  </section>
+
+  <!-- ══ RESULT ══ -->
+  <section id="screen-result">
+    <div class="result-kana" id="result-kana">🎉</div>
+    <div class="result-title" id="result-title">Well done!</div>
+    <div class="result-subtitle" id="result-subtitle">Here's how you did</div>
+
+    <div class="result-score-box">
+      <div class="result-fraction" id="result-fraction">0/0</div>
+      <div class="result-label">correct answers</div>
+      <div class="result-pct" id="result-pct">0%</div>
+    </div>
+
+    <div class="result-message" id="result-message"></div>
+
+    <div class="result-btns">
+      <button class="btn-retry" onclick="retryQuiz()">Try Again</button>
+      <button class="btn-home" onclick="goHome()">← Home</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA — Real Japanese words (kana only)
+// ═══════════════════════════════════════════════
+
+const WORDS_HIRAGANA = [
+  // Basic
+  { kana: 'あめ',       romaji: 'ame',       meaning: 'rain / candy' },
+  { kana: 'いぬ',       romaji: 'inu',       meaning: 'dog' },
+  { kana: 'うみ',       romaji: 'umi',       meaning: 'sea' },
+  { kana: 'えき',       romaji: 'eki',       meaning: 'station' },
+  { kana: 'おかね',     romaji: 'okane',     meaning: 'money' },
+  { kana: 'かさ',       romaji: 'kasa',      meaning: 'umbrella' },
+  { kana: 'きって',     romaji: 'kitte',     meaning: 'stamp' },
+  { kana: 'くつ',       romaji: 'kutsu',     meaning: 'shoes' },
+  { kana: 'けむり',     romaji: 'kemuri',    meaning: 'smoke' },
+  { kana: 'こえ',       romaji: 'koe',       meaning: 'voice' },
+  { kana: 'さかな',     romaji: 'sakana',    meaning: 'fish' },
+  { kana: 'しお',       romaji: 'shio',      meaning: 'salt' },
+  { kana: 'すし',       romaji: 'sushi',     meaning: 'sushi' },
+  { kana: 'せかい',     romaji: 'sekai',     meaning: 'world' },
+  { kana: 'そら',       romaji: 'sora',      meaning: 'sky' },
+  { kana: 'たまご',     romaji: 'tamago',    meaning: 'egg' },
+  { kana: 'ちかてつ',   romaji: 'chikatetsu',meaning: 'subway' },
+  { kana: 'つき',       romaji: 'tsuki',     meaning: 'moon' },
+  { kana: 'てがみ',     romaji: 'tegami',    meaning: 'letter' },
+  { kana: 'とり',       romaji: 'tori',      meaning: 'bird' },
+  { kana: 'なまえ',     romaji: 'namae',     meaning: 'name' },
+  { kana: 'にわ',       romaji: 'niwa',      meaning: 'garden' },
+  { kana: 'ぬの',       romaji: 'nuno',      meaning: 'cloth' },
+  { kana: 'ねこ',       romaji: 'neko',      meaning: 'cat' },
+  { kana: 'のみもの',   romaji: 'nomimono',  meaning: 'drink' },
+  { kana: 'はな',       romaji: 'hana',      meaning: 'flower' },
+  { kana: 'ひと',       romaji: 'hito',      meaning: 'person' },
+  { kana: 'ふゆ',       romaji: 'fuyu',      meaning: 'winter' },
+  { kana: 'へや',       romaji: 'heya',      meaning: 'room' },
+  { kana: 'ほし',       romaji: 'hoshi',     meaning: 'star' },
+  { kana: 'まど',       romaji: 'mado',      meaning: 'window' },
+  { kana: 'みず',       romaji: 'mizu',      meaning: 'water' },
+  { kana: 'むし',       romaji: 'mushi',     meaning: 'insect' },
+  { kana: 'め',         romaji: 'me',        meaning: 'eye' },
+  { kana: 'もり',       romaji: 'mori',      meaning: 'forest' },
+  { kana: 'やま',       romaji: 'yama',      meaning: 'mountain' },
+  { kana: 'ゆき',       romaji: 'yuki',      meaning: 'snow' },
+  { kana: 'よる',       romaji: 'yoru',      meaning: 'night' },
+  { kana: 'らじお',     romaji: 'rajio',     meaning: 'radio' },
+  { kana: 'りんご',     romaji: 'ringo',     meaning: 'apple' },
+  { kana: 'るすばん',   romaji: 'rusuban',   meaning: 'house-sitting' },
+  { kana: 'れきし',     romaji: 'rekishi',   meaning: 'history' },
+  { kana: 'ろうか',     romaji: 'rouka',     meaning: 'hallway' },
+  { kana: 'わたし',     romaji: 'watashi',   meaning: 'I / me' },
+  { kana: 'をとこ',     romaji: 'otoko',     meaning: 'man' },
+  { kana: 'じしょ',     romaji: 'jisho',     meaning: 'dictionary' },
+  { kana: 'でんしゃ',   romaji: 'densha',    meaning: 'train' },
+  { kana: 'びょういん', romaji: 'byouin',    meaning: 'hospital', youon: true },
+  { kana: 'ぎんこう',   romaji: 'ginkou',    meaning: 'bank' },
+  { kana: 'ざっし',     romaji: 'zasshi',    meaning: 'magazine' },
+  // 拗音 words
+  { kana: 'きゃく',     romaji: 'kyaku',     meaning: 'guest / customer',   youon: true },
+  { kana: 'きゅうり',   romaji: 'kyuuri',    meaning: 'cucumber',           youon: true },
+  { kana: 'きょうと',   romaji: 'kyouto',    meaning: 'Kyoto',              youon: true },
+  { kana: 'しゃしん',   romaji: 'shashin',   meaning: 'photograph',         youon: true },
+  { kana: 'しゅじん',   romaji: 'shujin',    meaning: 'husband / master',   youon: true },
+  { kana: 'しょくじ',   romaji: 'shokuji',   meaning: 'meal',               youon: true },
+  { kana: 'ちゃわん',   romaji: 'chawan',    meaning: 'rice bowl',          youon: true },
+  { kana: 'ちゅうもん', romaji: 'chuumon',   meaning: 'order (food)',       youon: true },
+  { kana: 'ちょうちょ', romaji: 'choucho',   meaning: 'butterfly',          youon: true },
+  { kana: 'にゅうがく', romaji: 'nyuugaku',  meaning: 'school enrollment',  youon: true },
+  { kana: 'ひゃく',     romaji: 'hyaku',     meaning: 'hundred',            youon: true },
+  { kana: 'みゃく',     romaji: 'myaku',     meaning: 'pulse',              youon: true },
+  { kana: 'りょこう',   romaji: 'ryokou',    meaning: 'travel',             youon: true },
+  { kana: 'りゅうがく', romaji: 'ryuugaku',  meaning: 'studying abroad',    youon: true },
+  { kana: 'ぎゃく',     romaji: 'gyaku',     meaning: 'reverse / opposite', youon: true },
+  { kana: 'じゅぎょう', romaji: 'jugyou',    meaning: 'lesson / class',     youon: true },
+  { kana: 'じょうず',   romaji: 'jouzu',     meaning: 'skillful',           youon: true },
+  { kana: 'びょうき',   romaji: 'byouki',    meaning: 'illness',            youon: true },
+  { kana: 'ぴゅーぴゅー',romaji: 'pyuupyuu', meaning: 'whistling wind',     youon: true },
+  { kana: 'みょうじ',   romaji: 'myouji',    meaning: 'family name',        youon: true },
+];
+
+const WORDS_KATAKANA = [
+  { kana: 'アイスクリーム', romaji: 'aisukuriimu', meaning: 'ice cream' },
+  { kana: 'アニメ',        romaji: 'anime',        meaning: 'anime' },
+  { kana: 'アパート',      romaji: 'apaato',       meaning: 'apartment' },
+  { kana: 'イベント',      romaji: 'ibento',       meaning: 'event' },
+  { kana: 'インターネット', romaji: 'intaanetto',  meaning: 'internet' },
+  { kana: 'ウイルス',      romaji: 'uirusu',       meaning: 'virus' },
+  { kana: 'エネルギー',    romaji: 'enerugii',     meaning: 'energy' },
+  { kana: 'エレベーター',  romaji: 'erebeetaa',    meaning: 'elevator' },
+  { kana: 'オレンジ',      romaji: 'orenji',       meaning: 'orange' },
+  { kana: 'カメラ',        romaji: 'kamera',       meaning: 'camera' },
+  { kana: 'ギター',        romaji: 'gitaa',        meaning: 'guitar' },
+  { kana: 'コーヒー',      romaji: 'koohii',       meaning: 'coffee' },
+  { kana: 'コンピューター',romaji: 'konpyuutaa',   meaning: 'computer',        youon: true },
+  { kana: 'サッカー',      romaji: 'sakkaa',       meaning: 'soccer' },
+  { kana: 'スーパー',      romaji: 'suupaa',       meaning: 'supermarket' },
+  { kana: 'スマートフォン',romaji: 'sumaatofon',   meaning: 'smartphone' },
+  { kana: 'セーター',      romaji: 'seetaa',       meaning: 'sweater' },
+  { kana: 'タクシー',      romaji: 'takushii',     meaning: 'taxi' },
+  { kana: 'チョコレート',  romaji: 'chokoreeto',   meaning: 'chocolate' },
+  { kana: 'テーブル',      romaji: 'teebu ru',     meaning: 'table' },
+  { kana: 'テレビ',        romaji: 'terebi',       meaning: 'TV' },
+  { kana: 'ドア',          romaji: 'doa',          meaning: 'door' },
+  { kana: 'トイレ',        romaji: 'toire',        meaning: 'toilet' },
+  { kana: 'ニュース',      romaji: 'nyuusu',       meaning: 'news',            youon: true },
+  { kana: 'ノート',        romaji: 'nooto',        meaning: 'notebook' },
+  { kana: 'パソコン',      romaji: 'pasokon',      meaning: 'personal computer' },
+  { kana: 'バス',          romaji: 'basu',         meaning: 'bus' },
+  { kana: 'ピアノ',        romaji: 'piano',        meaning: 'piano' },
+  { kana: 'ビール',        romaji: 'biiru',        meaning: 'beer' },
+  { kana: 'ファッション',  romaji: 'fasshon',      meaning: 'fashion',         youon: true },
+  { kana: 'フォーク',      romaji: 'fooku',        meaning: 'fork',            youon: true },
+  { kana: 'プール',        romaji: 'puuru',        meaning: 'swimming pool' },
+  { kana: 'ベッド',        romaji: 'beddo',        meaning: 'bed' },
+  { kana: 'ボール',        romaji: 'booru',        meaning: 'ball' },
+  { kana: 'マクドナルド',  romaji: 'makudonarudo', meaning: 'McDonald\'s' },
+  { kana: 'メニュー',      romaji: 'menyuu',       meaning: 'menu',            youon: true },
+  { kana: 'ライター',      romaji: 'raitaa',       meaning: 'lighter' },
+  { kana: 'レストラン',    romaji: 'resutoran',    meaning: 'restaurant' },
+  { kana: 'ロボット',      romaji: 'robotto',      meaning: 'robot' },
+  { kana: 'ワイン',        romaji: 'wain',         meaning: 'wine' },
+  { kana: 'シャワー',      romaji: 'shawaa',       meaning: 'shower',          youon: true },
+  { kana: 'ジュース',      romaji: 'juusu',        meaning: 'juice',           youon: true },
+  { kana: 'チャンネル',    romaji: 'channeru',     meaning: 'TV channel',      youon: true },
+  { kana: 'キャラクター',  romaji: 'kyarakutaa',   meaning: 'character',       youon: true },
+  { kana: 'ショッピング',  romaji: 'shoppingu',    meaning: 'shopping',        youon: true },
+  { kana: 'チケット',      romaji: 'chiketto',     meaning: 'ticket' },
+];
+
+// All unique romaji values (for wrong answer pool)
+function getAllRomaji(script) {
+  return [...new Set((script === 'hiragana' ? WORDS_HIRAGANA : WORDS_KATAKANA).map(w => w.romaji))];
+}
+
+// ═══════════════════════════════════════════════
+//  SIMILAR DISTRACTOR ENGINE
+// ═══════════════════════════════════════════════
+
+// Romaji: groups of phonetically close syllables.
+// A swap picks one item from the same group as the target syllable.
+const ROMAJI_CONFUSABLES = [
+  ['ka','ga','ko','go','ki','gi'],
+  ['sa','za','se','ze','so','zo'],
+  ['ta','da','to','do','te','de'],
+  ['na','ne','ni','no','nu'],
+  ['ha','ba','pa','he','be','pe','hi','bi','pi','ho','bo','po','fu','pu','bu'],
+  ['ma','mi','mu','me','mo'],
+  ['ra','ri','ru','re','ro'],
+  ['wa','wo','wi','we'],
+  ['ya','yo','yu'],
+  ['a','i','u','e','o'],
+  ['sha','cha','ja'],
+  ['shi','chi','ji'],
+  ['shu','chu','ju'],
+  ['sho','cho','jo'],
+  ['kya','gya','hya','mya','rya','nya','bya','pya'],
+  ['kyu','gyu','hyu','myu','ryu','nyu','byu','pyu'],
+  ['kyo','gyo','hyo','myo','ryo','nyo','byo','pyo'],
+  ['tsu','zu','su'],
+  ['ki','gi','ni','mi','ri'],
+  ['ku','gu','su','zu','nu','mu','ru'],
+  ['ke','ge','se','ze','ne','me','re','he','be','pe'],
+  ['ko','go','so','zo','no','mo','ro','ho','bo','po','to','do'],
+  ['n','m'],
+  ['uu','u','ou','oo','o'],
+  ['ii','i','e'],
+  ['aa','a'],
+  ['tt','t','kk','k','ss','s','pp','p','nn','n'],
+];
+
+// Split romaji string into recognizable syllable tokens
+function tokenizeRomaji(r) {
+  const tokens = [];
+  let i = 0;
+  while (i < r.length) {
+    // long vowels
+    if (i + 1 < r.length && r[i] === r[i+1] && 'aeiou'.includes(r[i])) {
+      tokens.push(r.slice(i, i+2)); i += 2; continue;
+    }
+    // double consonants
+    if (i + 1 < r.length && r[i] === r[i+1] && !'aeiou'.includes(r[i])) {
+      tokens.push(r.slice(i, i+2)); i += 2; continue;
+    }
+    // 3-char: sha/shi/shu/sho/chi/tsu/etc
+    if (i + 2 < r.length) {
+      const tri = r.slice(i, i+3);
+      if (['sha','shi','shu','sho','chi','tsu','tchi'].includes(tri)) {
+        tokens.push(tri); i += 3; continue;
+      }
+    }
+    // 2-char: consonant+vowel, or special
+    if (i + 1 < r.length && !'aeiou'.includes(r[i]) && 'aeiou'.includes(r[i+1])) {
+      tokens.push(r.slice(i, i+2)); i += 2; continue;
+    }
+    // 3-char: consonant+y+vowel (kya, ryu…)
+    if (i + 2 < r.length && !'aeiou'.includes(r[i]) && r[i+1] === 'y' && 'aeiou'.includes(r[i+2])) {
+      tokens.push(r.slice(i, i+3)); i += 3; continue;
+    }
+    tokens.push(r[i]); i++;
+  }
+  return tokens;
+}
+
+function findConfusableGroup(syllable) {
+  return ROMAJI_CONFUSABLES.find(g => g.includes(syllable.toLowerCase())) || null;
+}
+
+// Generate a romaji distractor by swapping 1–2 syllables with confusables
+function mutateRomaji(romaji, usedSet) {
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const tokens = tokenizeRomaji(romaji);
+    const mutable = tokens.map((t, i) => ({ i, t, group: findConfusableGroup(t) }))
+                          .filter(x => x.group && x.group.length > 1);
+    if (mutable.length === 0) break;
+
+    // Pick 1 or 2 positions to swap
+    const numSwaps = Math.random() < 0.4 && mutable.length >= 2 ? 2 : 1;
+    const positions = shuffle(mutable).slice(0, numSwaps);
+    const newTokens = [...tokens];
+    for (const pos of positions) {
+      const others = pos.group.filter(s => s !== pos.t.toLowerCase());
+      if (others.length === 0) continue;
+      newTokens[pos.i] = others[Math.floor(Math.random() * others.length)];
+    }
+    const candidate = newTokens.join('');
+    if (candidate !== romaji && !usedSet.has(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+// ─── Kana confusables ───
+// Each entry: [original_kana, ...look_or_sound_alikes]
+const KANA_CONFUSABLES_HIRA = {
+  'あ':['お','め'], 'い':['こ','り'], 'う':['つ','っ'], 'え':['ぇ','ん'],
+  'お':['あ','む'],
+  'か':['が','ゕ'], 'き':['さ','ぎ'], 'く':['ぐ','へ'], 'け':['げ','は'],
+  'こ':['ご','に'], 'さ':['き','ざ'], 'し':['じ','レ'], 'す':['ず','ぬ'],
+  'せ':['ぜ','ぺ'], 'そ':['ぞ','う'],
+  'た':['だ','な'], 'ち':['じ','ぢ'], 'つ':['づ','う','っ'], 'て':['で','た'],
+  'と':['ど','と','ち'],
+  'な':['た','れ'], 'に':['こ','は'], 'ぬ':['め','ぬ','ね'], 'ね':['ぬ','れ'],
+  'の':['め','ぬ'],
+  'は':['ば','ぱ','け'], 'ひ':['び','ぴ','に'], 'ふ':['ぶ','ぷ','つ'],
+  'へ':['べ','ぺ','く'], 'ほ':['ぼ','ぽ','お'],
+  'ま':['ま','は'], 'み':['み','ひ'], 'む':['む','お'], 'め':['ぬ','め','あ'],
+  'も':['ち','と'],
+  'や':['や','り'], 'ゆ':['ゆ','ゅ'], 'よ':['よ','ょ'],
+  'ら':['ら','ろ'], 'り':['り','い'], 'る':['る','ろ'], 'れ':['ね','れ'],
+  'ろ':['る','ら'],
+  'わ':['れ','ね','わ'], 'を':['お','よ'],
+  'ん':['ん','ぬ'],
+  'が':['か','ぎ'], 'ぎ':['き','が'], 'ぐ':['く','ぐ'], 'げ':['け','げ'],
+  'ご':['こ','ぞ'], 'ざ':['さ','じ'], 'じ':['し','ぢ'], 'ず':['す','づ'],
+  'ぜ':['せ','ぞ'], 'ぞ':['そ','ぜ'], 'だ':['た','で'], 'ぢ':['じ','ぢ'],
+  'づ':['ず','づ'], 'で':['て','だ'], 'ど':['と','ぞ'],
+  'ば':['は','ぱ'], 'び':['ひ','ぴ'], 'ぶ':['ふ','ぷ'], 'べ':['へ','ぺ'],
+  'ぼ':['ほ','ぽ'], 'ぱ':['は','ば'], 'ぴ':['ひ','び'], 'ぷ':['ふ','ぶ'],
+  'ぺ':['へ','べ'], 'ぽ':['ほ','ぼ'],
+  // youon small
+  'ゃ':['や','ゅ'], 'ゅ':['ゆ','ゃ'], 'ょ':['よ','ゃ'],
+  'っ':['つ','う'],
+};
+
+const KANA_CONFUSABLES_KATA = {
+  'ア':['オ','マ'], 'イ':['ト','ニ'], 'ウ':['ヴ','ウ'], 'エ':['ヱ','エ'],
+  'オ':['ア','ヲ'],
+  'カ':['ガ','ヵ'], 'キ':['ギ','チ'], 'ク':['グ','フ'], 'ケ':['ゲ','ケ'],
+  'コ':['ゴ','ユ'], 'サ':['ザ','テ'], 'シ':['ジ','ツ'], 'ス':['ズ','ス'],
+  'セ':['ゼ','セ'], 'ソ':['ゾ','ン'],
+  'タ':['ダ','ク'], 'チ':['ヂ','テ'], 'ツ':['ヅ','シ'], 'テ':['デ','チ'],
+  'ト':['ド','ト'],
+  'ナ':['メ','ネ'], 'ニ':['ニ','イ'], 'ヌ':['ス','メ'], 'ネ':['ネ','メ'],
+  'ノ':['ノ','ハ'],
+  'ハ':['バ','パ'], 'ヒ':['ビ','ピ'], 'フ':['ブ','プ'], 'ヘ':['ベ','ペ'],
+  'ホ':['ボ','ポ'],
+  'マ':['ア','マ'], 'ミ':['ニ','ミ'], 'ム':['ユ','ム'], 'メ':['ヌ','ネ'],
+  'モ':['ヲ','ユ'],
+  'ヤ':['ヤ','ア'], 'ユ':['コ','ユ'], 'ヨ':['ヨ','ョ'],
+  'ラ':['ラ','リ'], 'リ':['リ','ル'], 'ル':['ル','ラ'], 'レ':['レ','し'],
+  'ロ':['ロ','ラ'],
+  'ワ':['ワ','ウ'], 'ヲ':['オ','ヲ'],
+  'ン':['ソ','ン'],
+  'ガ':['カ','ガ'], 'ギ':['キ','ジ'], 'グ':['ク','グ'], 'ゲ':['ケ','ゲ'],
+  'ゴ':['コ','ゾ'], 'ザ':['サ','ザ'], 'ジ':['シ','ジ'], 'ズ':['ス','ズ'],
+  'ゼ':['セ','ゼ'], 'ゾ':['ソ','ゼ'], 'ダ':['タ','ダ'], 'ヂ':['ジ','ヂ'],
+  'ヅ':['ズ','ヅ'], 'デ':['テ','ダ'], 'ド':['ト','ド'],
+  'バ':['ハ','パ'], 'ビ':['ヒ','ピ'], 'ブ':['フ','プ'], 'ベ':['ヘ','ペ'],
+  'ボ':['ホ','ポ'], 'パ':['ハ','バ'], 'ピ':['ヒ','ビ'], 'プ':['フ','ブ'],
+  'ペ':['ヘ','ベ'], 'ポ':['ホ','ボ'],
+  'ャ':['ヤ','ュ'], 'ュ':['ユ','ャ'], 'ョ':['ヨ','ャ'],
+  'ッ':['ツ','ウ'],
+};
+
+// Generate a kana distractor by swapping 1–2 characters with confusables
+function mutateKana(kana, isKatakana, usedSet) {
+  const table = isKatakana ? KANA_CONFUSABLES_KATA : KANA_CONFUSABLES_HIRA;
+  const chars = [...kana]; // spread handles multi-byte chars
+
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const mutable = chars.map((c, i) => ({ i, c, alts: (table[c] || []).filter(a => a !== c) }))
+                         .filter(x => x.alts.length > 0);
+    if (mutable.length === 0) break;
+
+    const numSwaps = Math.random() < 0.35 && mutable.length >= 2 ? 2 : 1;
+    const positions = shuffle(mutable).slice(0, numSwaps);
+    const newChars = [...chars];
+    for (const pos of positions) {
+      newChars[pos.i] = pos.alts[Math.floor(Math.random() * pos.alts.length)];
+    }
+    const candidate = newChars.join('');
+    if (candidate !== kana && !usedSet.has(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let state = {
+  script: 'hiragana',
+  youon: false,
+  qCount: 10,
+  qCountMode: 10,
+  answerMode: 'mc',   // 'mc' | 'type'
+  questions: [],
+  current: 0,
+  correct: 0,
+  answered: false,
+};
+
+// ═══════════════════════════════════════════════
+//  HOME CONTROLS
+// ═══════════════════════════════════════════════
+function selectScript(s) {
+  state.script = s;
+  document.getElementById('btn-hira').classList.toggle('active', s === 'hiragana');
+  document.getElementById('btn-kata').classList.toggle('active', s === 'katakana');
+}
+
+function toggleYouon() {
+  state.youon = !state.youon;
+  document.getElementById('cb-youon').classList.toggle('checked', state.youon);
+}
+
+function selectMode(m) {
+  state.answerMode = m;
+  document.getElementById('btn-mode-mc').classList.toggle('active', m === 'mc');
+  document.getElementById('btn-mode-type').classList.toggle('active', m === 'type');
+}
+
+function selectQCount(n) {
+  state.qCount = n === 'custom' ? (parseInt(document.getElementById('custom-q-input').value) || 10) : n;
+  state.qCountMode = n;
+  ['10','20','custom'].forEach(v => {
+    document.getElementById('btn-q' + v).classList.toggle('active', String(n) === v);
+  });
+  document.getElementById('custom-q-wrap').classList.toggle('visible', n === 'custom');
+}
+
+function onCustomQInput() {
+  const val = parseInt(document.getElementById('custom-q-input').value);
+  if (val > 0) state.qCount = val;
+}
+
+// ═══════════════════════════════════════════════
+//  QUIZ LOGIC
+// ═══════════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildQuestions() {
+  const pool = (state.script === 'hiragana' ? WORDS_HIRAGANA : WORDS_KATAKANA)
+    .filter(w => state.youon ? true : !w.youon);
+
+  if (pool.length < 4) { alert('Not enough words for this selection!'); return false; }
+
+  // Resolve qCount (custom mode reads the input)
+  if (state.qCountMode === 'custom') {
+    const val = parseInt(document.getElementById('custom-q-input').value);
+    if (val > 0) state.qCount = val;
+  }
+
+  const shuffled = shuffle(pool);
+  const words = shuffled.slice(0, Math.min(state.qCount, shuffled.length));
+
+  // Assign question type: 'kana_to_romaji' or 'romaji_to_kana', roughly 50/50
+  state.questions = words.map(w => ({
+    ...w,
+    qtype: Math.random() < 0.5 ? 'kana_to_romaji' : 'romaji_to_kana'
+  }));
+  return true;
+}
+
+// For kana_to_romaji: show kana, pick romaji → distractors are similar romaji strings
+// For romaji_to_kana: show romaji, pick kana → distractors are similar kana strings
+function buildChoices(q) {
+  const isKatakana = state.script === 'katakana';
+  const allWords = state.script === 'hiragana' ? WORDS_HIRAGANA : WORDS_KATAKANA;
+
+  if (q.qtype === 'kana_to_romaji') {
+    // Correct = romaji string; distractors = mutated romaji
+    const usedValues = new Set([q.romaji, q.kana]);
+    const distractors = [];
+    for (let i = 0; i < 3; i++) {
+      const mut = mutateRomaji(q.romaji, usedValues);
+      if (mut) { distractors.push({ display: mut, value: mut }); usedValues.add(mut); }
+    }
+    // fallback: similar-length romaji from pool
+    if (distractors.length < 3) {
+      const pool = shuffle(allWords.map(w => w.romaji).filter(r => !usedValues.has(r)));
+      while (distractors.length < 3 && pool.length > 0) {
+        const r = pool.shift();
+        distractors.push({ display: r, value: r });
+        usedValues.add(r);
+      }
+    }
+    const correct = { display: q.romaji, value: q.romaji, isCorrect: true };
+    return shuffle([correct, ...distractors.slice(0, 3)]);
+
+  } else {
+    // romaji_to_kana: Correct = kana; distractors = mutated kana strings
+    const usedKana = new Set([q.kana]);
+    const distractors = [];
+    for (let i = 0; i < 6; i++) {
+      const mut = mutateKana(q.kana, isKatakana, usedKana);
+      if (mut) { distractors.push({ display: mut, value: mut }); usedKana.add(mut); }
+      if (distractors.length >= 3) break;
+    }
+    // fallback: other kana from pool that differ in romaji
+    if (distractors.length < 3) {
+      const pool = shuffle(allWords.filter(w => w.kana !== q.kana && !usedKana.has(w.kana)));
+      while (distractors.length < 3 && pool.length > 0) {
+        const w = pool.shift();
+        distractors.push({ display: w.kana, value: w.kana });
+        usedKana.add(w.kana);
+      }
+    }
+    const correct = { display: q.kana, value: q.kana, isCorrect: true };
+    return shuffle([correct, ...distractors.slice(0, 3)]);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  KANA KEYBOARD
+// ═══════════════════════════════════════════════
+
+const KB_HIRA = {
+  main: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ',
+         'た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ',
+         'ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'],
+  dakuten: ['が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ','だ','ぢ','づ','で','ど',
+            'ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ'],
+  youon: ['きゃ','きゅ','きょ','しゃ','しゅ','しょ','ちゃ','ちゅ','ちょ',
+          'にゃ','にゅ','にょ','ひゃ','ひゅ','ひょ','みゃ','みゅ','みょ',
+          'りゃ','りゅ','りょ','ぎゃ','ぎゅ','ぎょ','じゃ','じゅ','じょ',
+          'びゃ','びゅ','びょ','ぴゃ','ぴゅ','ぴょ'],
+  smallTsu: 'っ',
+};
+
+const KB_KATA = {
+  main: ['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ',
+         'タ','チ','ツ','テ','ト','ナ','ニ','ヌ','ネ','ノ','ハ','ヒ','フ','ヘ','ホ',
+         'マ','ミ','ム','メ','モ','ヤ','ユ','ヨ','ラ','リ','ル','レ','ロ','ワ','ヲ','ン'],
+  dakuten: ['ガ','ギ','グ','ゲ','ゴ','ザ','ジ','ズ','ゼ','ゾ','ダ','ヂ','ヅ','デ','ド',
+            'バ','ビ','ブ','ベ','ボ','パ','ピ','プ','ペ','ポ'],
+  youon: ['キャ','キュ','キョ','シャ','シュ','ショ','チャ','チュ','チョ',
+          'ニャ','ニュ','ニョ','ヒャ','ヒュ','ヒョ','ミャ','ミュ','ミョ',
+          'リャ','リュ','リョ','ギャ','ギュ','ギョ','ジャ','ジュ','ジョ',
+          'ビャ','ビュ','ビョ','ピャ','ピュ','ピョ'],
+  smallTsu: 'ッ',
+};
+
+let currentKbTab = 'main';
+
+function initKanaKeyboard(isKatakana) {
+  const kb = isKatakana ? KB_KATA : KB_HIRA;
+  // Update small-tsu button
+  document.getElementById('kb-small-tsu').textContent = kb.smallTsu;
+  document.getElementById('kb-small-tsu').onclick = () => kbInsert(kb.smallTsu);
+  // Build all three grids
+  buildKbGrid('kb-main', kb.main);
+  buildKbGrid('kb-dakuten', kb.dakuten);
+  buildKbGrid('kb-youon', kb.youon);
+  showKbTab('main');
+}
+
+function buildKbGrid(id, keys) {
+  const grid = document.getElementById(id);
+  grid.innerHTML = '';
+  keys.forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'kb-key';
+    btn.textContent = k;
+    btn.onclick = () => kbInsert(k);
+    grid.appendChild(btn);
+  });
+}
+
+function showKbTab(tab) {
+  currentKbTab = tab;
+  ['main','dakuten','youon'].forEach(t => {
+    document.getElementById('kb-' + t).style.display = t === tab ? 'grid' : 'none';
+    const tabBtn = document.getElementById('kb-tab-' + t);
+    if (tabBtn) tabBtn.classList.toggle('active', t === tab);
+  });
+}
+
+function kbInsert(char) {
+  const input = document.getElementById('type-input');
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+  const val = input.value;
+  input.value = val.slice(0, start) + char + val.slice(end);
+  input.setSelectionRange(start + char.length, start + char.length);
+  input.focus();
+  onTypeInput();
+}
+
+function kbBackspace() {
+  const input = document.getElementById('type-input');
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+  if (start === end && start > 0) {
+    // Delete one character before cursor (handles multi-byte kana correctly)
+    const val = [...input.value]; // spread to handle unicode correctly
+    val.splice(start - 1, 1);
+    input.value = val.join('');
+    input.setSelectionRange(start - 1, start - 1);
+  } else if (start !== end) {
+    const val = [...input.value];
+    val.splice(start, end - start);
+    input.value = val.join('');
+    input.setSelectionRange(start, start);
+  }
+  input.focus();
+  onTypeInput();
+}
+
+function kbClear() {
+  document.getElementById('type-input').value = '';
+  document.getElementById('type-input').focus();
+  onTypeInput();
+}
+
+function onTypeInput() {
+  // live preview hint: show char count or validation
+  const val = document.getElementById('type-input').value.trim();
+  const hint = document.getElementById('type-hint');
+  if (val.length === 0) {
+    hint.textContent = '';
+  } else {
+    hint.textContent = val.length + ' char' + (val.length !== 1 ? 's' : '') + ' entered';
+  }
+}
+
+function onTypeKeydown(e) {
+  if (e.key === 'Enter') submitTypedAnswer();
+}
+
+function normalizeAnswer(s) {
+  return s.trim().toLowerCase()
+    // strip long-vowel markers common in romaji
+    .replace(/ō/g,'ou').replace(/ū/g,'uu').replace(/ā/g,'aa')
+    .replace(/ī/g,'ii').replace(/ē/g,'ee');
+}
+
+function submitTypedAnswer() {
+  if (state.answered) return;
+  const input = document.getElementById('type-input');
+  const raw = input.value.trim();
+  if (!raw) return;
+
+  const q = state.questions[state.current];
+  const correctValue = q.qtype === 'kana_to_romaji' ? q.romaji : q.kana;
+  const isCorrect = normalizeAnswer(raw) === normalizeAnswer(correctValue);
+
+  handleTypedAnswer(raw, correctValue, isCorrect, q);
+}
+
+function handleTypedAnswer(typed, correctValue, isCorrect, q) {
+  state.answered = true;
+  document.getElementById('type-submit-btn').disabled = true;
+  document.getElementById('type-input').disabled = true;
+
+  // Colour the input border
+  const wrap = document.querySelector('.type-input-wrap');
+  wrap.style.borderColor = isCorrect ? 'var(--green)' : 'var(--red)';
+
+  const fb = document.getElementById('feedback-bar');
+  const fbMain = document.getElementById('fb-main');
+  const fbDetail = document.getElementById('fb-detail');
+
+  if (isCorrect) {
+    state.correct++;
+    fb.classList.add('correct', 'show');
+    fbMain.textContent = '正解！ Correct!';
+    fbDetail.textContent = q.kana + ' = ' + q.romaji;
+  } else {
+    fb.classList.add('wrong', 'show');
+    fbMain.textContent = '不正解。 Not quite!';
+    fbDetail.textContent = q.qtype === 'kana_to_romaji'
+      ? q.kana + ' is read as: ' + q.romaji + '  (you wrote: ' + typed + ')'
+      : '"' + q.romaji + '" is written: ' + q.kana + '  (you wrote: ' + typed + ')';
+  }
+
+  // Auto-reveal meaning
+  document.getElementById('meaning-popup').classList.add('open');
+  document.getElementById('meaning-hint-btn').querySelector('.hint-eye').textContent = '🙈';
+
+  document.getElementById('score-correct').textContent = state.correct;
+  document.getElementById('btn-next').classList.add('show');
+}
+
+function startQuiz() {
+  if (!buildQuestions()) return;
+  state.current = 0;
+  state.correct = 0;
+  state.answered = false;
+
+  showScreen('quiz');
+  document.getElementById('quiz-mode-tag').textContent =
+    (state.script === 'hiragana' ? 'Hiragana' : 'Katakana') +
+    (state.youon ? ' + 拗音' : '');
+
+  renderQuestion();
+}
+
+function toggleMeaning() {
+  const popup = document.getElementById('meaning-popup');
+  const btn = document.getElementById('meaning-hint-btn');
+  const isOpen = popup.classList.contains('open');
+  popup.classList.toggle('open', !isOpen);
+  btn.querySelector('.hint-eye').textContent = isOpen ? '👁' : '🙈';
+}
+
+function renderQuestion() {
+  const q = state.questions[state.current];
+  state.answered = false;
+
+  // Close meaning popup
+  document.getElementById('meaning-popup').classList.remove('open');
+  document.getElementById('meaning-hint-btn').querySelector('.hint-eye').textContent = '👁';
+
+  // Progress
+  const pct = (state.current / state.questions.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  // Score
+  document.getElementById('score-correct').textContent = state.correct;
+  document.getElementById('score-total').textContent = ' / ' + state.current + ' correct';
+
+  // Question type badge
+  const isKanaToRomaji = q.qtype === 'kana_to_romaji';
+  const prompt = document.getElementById('question-prompt');
+  const wordEl = document.getElementById('q-word');
+
+  const oldBadge = document.querySelector('.qtype-badge');
+  if (oldBadge) oldBadge.remove();
+
+  const badge = document.createElement('div');
+  badge.className = 'qtype-badge ' + (isKanaToRomaji ? 'type-kana' : 'type-romaji');
+  badge.textContent = isKanaToRomaji ? 'kana → rōmaji' : 'rōmaji → kana';
+  prompt.parentNode.insertBefore(badge, prompt);
+
+  prompt.textContent = isKanaToRomaji
+    ? 'What is the rōmaji reading of:'
+    : 'Which kana spells:';
+
+  wordEl.style.animation = 'none';
+  wordEl.offsetHeight;
+  wordEl.style.animation = 'fadeUp 0.4s ease forwards';
+  if (isKanaToRomaji) {
+    wordEl.style.fontFamily = "'Noto Serif JP', serif";
+    wordEl.style.fontSize = 'clamp(3rem, 10vw, 5rem)';
+    wordEl.textContent = q.kana;
+  } else {
+    wordEl.style.fontFamily = "'DM Mono', monospace";
+    wordEl.style.fontSize = 'clamp(2rem, 7vw, 3.2rem)';
+    wordEl.textContent = q.romaji;
+  }
+
+  document.getElementById('q-meaning').textContent = q.meaning;
+
+  // Feedback reset
+  document.getElementById('feedback-bar').className = 'feedback-bar';
+
+  // Next btn
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.classList.remove('show');
+  nextBtn.textContent = state.current === state.questions.length - 1 ? 'See Results →' : 'Next →';
+
+  const isTypeMode = state.answerMode === 'type';
+  document.getElementById('choices-grid').style.display = isTypeMode ? 'none' : 'grid';
+  document.getElementById('type-answer-area').style.display = isTypeMode ? 'block' : 'none';
+
+  if (isTypeMode) {
+    // Reset type input
+    const input = document.getElementById('type-input');
+    input.value = '';
+    input.disabled = false;
+    document.getElementById('type-submit-btn').disabled = false;
+    document.getElementById('type-hint').textContent = '';
+    document.querySelector('.type-input-wrap').style.borderColor = '';
+
+    const needsKana = !isKanaToRomaji;
+    const isKatakana = state.script === 'katakana';
+    if (needsKana) {
+      input.className = 'type-input';
+      input.placeholder = isKatakana ? 'type or tap katakana…' : 'type or tap hiragana…';
+      document.getElementById('kana-keyboard').style.display = 'block';
+      initKanaKeyboard(isKatakana);
+    } else {
+      input.className = 'type-input romaji-mode';
+      input.placeholder = 'type rōmaji (e.g. sakura)…';
+      document.getElementById('kana-keyboard').style.display = 'none';
+    }
+    // Focus after short delay to avoid scroll jump on mobile
+    setTimeout(() => input.focus(), 80);
+  } else {
+    // MC mode: build choices
+    const choices = buildChoices(q);
+    const grid = document.getElementById('choices-grid');
+    grid.innerHTML = '';
+    const letters = ['A', 'B', 'C', 'D'];
+    const isKanaChoice = !isKanaToRomaji;
+    choices.forEach((choice, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn' + (isKanaChoice ? ' choice-kana' : '');
+      btn.innerHTML = `<span class="choice-letter">${letters[i]}</span>${choice.display}`;
+      btn.onclick = () => handleAnswer(choice, q, btn, choices);
+      grid.appendChild(btn);
+    });
+  }
+}
+
+function handleAnswer(choice, q, btnEl, allChoices) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const correctValue = q.qtype === 'kana_to_romaji' ? q.romaji : q.kana;
+  const isCorrect = choice.value === correctValue;
+
+  const allBtns = document.querySelectorAll('.choice-btn');
+  allBtns.forEach((b, idx) => {
+    b.disabled = true;
+    if (allChoices[idx].value === correctValue) b.classList.add('correct');
+  });
+
+  const fb = document.getElementById('feedback-bar');
+  const fbMain = document.getElementById('fb-main');
+  const fbDetail = document.getElementById('fb-detail');
+
+  if (isCorrect) {
+    state.correct++;
+    btnEl.classList.add('correct');
+    fb.classList.add('correct', 'show');
+    fbMain.textContent = '正解！ Correct!';
+    fbDetail.textContent = q.kana + ' = ' + q.romaji;
+  } else {
+    btnEl.classList.add('wrong');
+    fb.classList.add('wrong', 'show');
+    fbMain.textContent = '不正解。 Not quite!';
+    fbDetail.textContent = q.qtype === 'kana_to_romaji'
+      ? q.kana + ' is read as: ' + q.romaji
+      : '"' + q.romaji + '" is written: ' + q.kana;
+  }
+
+  // Auto-reveal meaning on answer
+  document.getElementById('meaning-popup').classList.add('open');
+  document.getElementById('meaning-hint-btn').querySelector('.hint-eye').textContent = '🙈';
+
+  document.getElementById('score-correct').textContent = state.correct;
+  document.getElementById('btn-next').classList.add('show');
+}
+
+function nextQuestion() {
+  state.current++;
+  if (state.current >= state.questions.length) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  RESULT
+// ═══════════════════════════════════════════════
+function showResult() {
+  showScreen('result');
+  const total = state.questions.length;
+  const pct = Math.round((state.correct / total) * 100);
+
+  document.getElementById('result-fraction').textContent = state.correct + ' / ' + total;
+  document.getElementById('result-pct').textContent = pct + '%';
+
+  let kana, title, msg;
+  if (pct === 100) {
+    kana = '完璧！'; title = 'Perfect Score!';
+    msg = 'Flawless. You\'ve truly mastered this set.';
+  } else if (pct >= 80) {
+    kana = 'すごい！'; title = 'Excellent!';
+    msg = 'Really strong result. Keep going!';
+  } else if (pct >= 60) {
+    kana = 'いいね！'; title = 'Good Job!';
+    msg = 'Solid effort. A little more practice and you\'ll nail it.';
+  } else if (pct >= 40) {
+    kana = 'がんばれ！'; title = 'Keep Going!';
+    msg = 'You\'re building the foundation. Try again!';
+  } else {
+    kana = 'もう一度！'; title = 'Keep Studying!';
+    msg = 'Every master was once a beginner. Try again!';
+  }
+
+  document.getElementById('result-kana').textContent = kana;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-message').textContent = msg;
+  document.getElementById('result-subtitle').textContent =
+    (state.script === 'hiragana' ? 'Hiragana' : 'Katakana') +
+    (state.youon ? ' + 拗音' : '') + ' · ' + total + ' questions · ' +
+    (state.answerMode === 'type' ? 'typed' : 'multiple choice');
+}
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+function showScreen(name) {
+  ['home','quiz','result'].forEach(s => {
+    document.getElementById('screen-' + s).style.display = s === name
+      ? (s === 'home' ? 'flex' : 'block') : 'none';
+  });
+}
+
+function retryQuiz() {
+  startQuiz();
+}
+
+function goHome() {
+  showScreen('home');
+}
+</script>
+</body>
+</html>
