@@ -1,4 +1,4 @@
-const WORDS_HIRAGANA = [
+export const WORDS_HIRAGANA = [
   // --- Original List ---
   { kana: 'あめ', romaji: 'ame', meaning: 'rain / candy' },
   { kana: 'いぬ', romaji: 'inu', meaning: 'dog' },
@@ -462,7 +462,7 @@ const WORDS_HIRAGANA = [
   { kana: 'たんじょうび', romaji: 'tanjoubi', meaning: 'birthday' },
 ];
 
-const WORDS_KATAKANA = [
+export const WORDS_KATAKANA = [
   // --- Original List ---
   { kana: 'アイスクリーム', romaji: 'aisukuriimu', meaning: 'ice cream' },
   { kana: 'アニメ', romaji: 'anime', meaning: 'anime' },
